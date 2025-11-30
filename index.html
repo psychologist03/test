@@ -1,144 +1,130 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Опросник Д. Олвеуса</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест на одиночество</title>
 <style>
-body { font-family: Arial; max-width: 800px; margin: 10px auto; background: #f8f9fa; padding: 15px; border-radius: 10px; }
-h2 { text-align: center; font-size: 1.4em; }
-.question { margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
-label { display: block; margin: 5px 0; font-size: 0.9em; }
-button { display: block; margin: 20px auto; padding: 12px 30px; font-size: 1em; background-color: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%; max-width: 300px; }
-button:hover { background-color: #0056b3; }
-#result { display: none; background: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; }
+body { font-family: Arial; max-width: 800px; margin: 15px auto; padding: 15px; background: #f8f9fa; border-radius: 10px; }
+h2 { text-align:center; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+th { background: #e9ecef; }
+button { margin-top: 15px; padding: 10px 20px; font-size: 1em; background:#007BFF; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+#result { margin-top: 20px; background:#e9ecef; padding: 12px; border-radius:6px; display:none; text-align:center; }
 </style>
 </head>
 <body>
 
-<h2>Опросник Д. Олвеуса</h2>
-
-<div class="info-block">
-  <div>
-    <label for="group">Группа:</label>
-    <input type="text" id="group" placeholder="Группа" required>
-  </div>
-  <div>
-    <label for="age">Возраст:</label>
-    <input type="number" id="age" min="5" max="30" placeholder="Возраст" required>
-  </div>
-  <div>
-    <label for="gender">Пол:</label>
-    <select id="gender" required>
-      <option value="">Выберите...</option>
-      <option value="Мужской">Мужской</option>
-      <option value="Женский">Женский</option>
-    </select>
-  </div>
+<h2>Тест на чувство одиночества</h2>
+<div>
+  ФИО: <input type="text" id="fio" required>
+  &nbsp; Группа: <input type="text" id="group" required>
 </div>
 
-<form id="quizForm">
-  <div id="questions"></div>
+<form id="formTest">
+  <table>
+    <thead>
+      <tr>
+        <th>№</th>
+        <th style="text-align:left">Утверждение</th>
+        <th>Часто<br>(3)</th>
+        <th>Иногда<br>(2)</th>
+        <th>Редко<br>(1)</th>
+        <th>Никогда<br>(0)</th>
+      </tr>
+    </thead>
+    <tbody id="questions"></tbody>
+  </table>
+
   <button type="button" onclick="calculateResult()">Отправить результат</button>
 </form>
 
 <div id="result"></div>
 
 <script>
-const questions = [
-  "Я кого-то обозвал.",
-  "Я с кем-то специально не разговаривал.",
-  "Я нанес кому-то физический вред, например, толкнул или ударил.",
-  "Я распространял о ком-то сплетни.",
-  "Я угрожал.",
-  "Я украл или испортил чьи-то вещи.",
-  "Меня обзывали.",
-  "Обо мне распространяли сплетни.",
-  "Никто не хочет сидеть со мной или проводить свободное время.",
-  "У меня украли вещи.",
-  "Мне нанесли физический вред (ударили, толкнули).",
-  "Никто не разговаривает со мной.",
-  "Мне угрожали."
+const GS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxG__xXUvYDAi9-00ke6dIsOyWPfyubSy9ddNxJvwtHl9NQpvcSdriVNvSvvE8rt7_0Nw/exec"; // вставьте ваш Web App
+
+const items = [
+  "Я несчастлив, занимаясь столькими вещами в одиночку",
+  "Мне не с кем поговорить",
+  "Для меня невыносимо быть таким одиноким",
+  "Мне не хватает общения",
+  "Я чувствую, будто никто не понимает меня",
+  "Я застаю себя в ожидании, что люди позвонят, напишут мне",
+  "Нет никого, к кому бы я мог обратиться",
+  "Я сейчас больше ни с кем не близок",
+  "Те, кто меня окружает, не разделяют мои интересы",
+  "Я чувствую себя покинутым",
+  "Мне трудно раскрепощаться и общаться с окружающими",
+  "Я чувствую себя совершенно одиноким",
+  "Мои социальные отношения поверхностны",
+  "Я умираю от тоски по компании",
+  "Никто по-настоящему не знает меня",
+  "Я чувствую себя изолированным",
+  "Я несчастен, будучи таким отверженным",
+  "Мне трудно заводить друзей",
+  "Я чувствую себя исключенным",
+  "Люди вокруг меня, но не со мной"
 ];
 
-const answerOptions = [
-  "Никогда не было",
-  "Было раз или два",
-  "Бывает иногда",
-  "Бывает раз в неделю",
-  "Бывает несколько раз в неделю"
-];
+const tbody = document.getElementById("questions");
 
-const activeRange = [0,1,2,3,4,5];
-const passiveRange = [6,7,8,9,10,11,12];
+items.forEach((txt, i) => {
+  const n = i + 1;
+  tbody.innerHTML += `
+    <tr>
+      <td>${n}</td>
+      <td style="text-align:left">${txt}</td>
+      <td><input type="radio" name="q${n}" value="3" required></td>
+      <td><input type="radio" name="q${n}" value="2"></td>
+      <td><input type="radio" name="q${n}" value="1"></td>
+      <td><input type="radio" name="q${n}" value="0"></td>
+    </tr>`;
+});
 
-window.onload = function() {
-  const container = document.getElementById("questions");
-  questions.forEach((q, i) => {
-    const div = document.createElement("div");
-    div.className = "question";
-    div.innerHTML = `<strong>${i+1}. ${q}</strong>`;
-    answerOptions.forEach((opt, idx) => {
-      div.innerHTML += `<label><input type="radio" name="q${i}" value="${idx}" required> ${opt}</label>`;
-    });
-    container.appendChild(div);
-  });
-};
-
-function interpretNumeric(value) {
-  if (value < 1) return "слабо выражено";
-  if (value < 2.5) return "умеренно выражено";
-  return "ярко выражено (регулярное проявление)";
+function interpret(score) {
+  if(score >= 40) return "Высокий уровень одиночества";
+  if(score >= 20) return "Средний уровень одиночества";
+  return "Низкий уровень одиночества";
 }
 
 async function calculateResult() {
+  const fio = document.getElementById("fio").value.trim();
   const group = document.getElementById("group").value.trim();
-  const age = document.getElementById("age").value.trim();
-  const gender = document.getElementById("gender").value;
 
-  let activeSum = 0, passiveSum = 0;
-  let activeCount = 0, passiveCount = 0;
+  let total = 0;
+  let answers = [];
 
-  for (let i = 0; i < questions.length; i++) {
-    const selected = document.querySelector(`input[name="q${i}"]:checked`);
-    if (!selected) {
-      alert("Пожалуйста, ответьте на все вопросы!");
-      return;
-    }
-    const value = parseInt(selected.value);
-    if (activeRange.includes(i)) { activeSum += value; activeCount++; }
-    if (passiveRange.includes(i)) { passiveSum += value; passiveCount++; }
+  for(let i=1; i<=items.length; i++){
+    const radios = document.getElementsByName("q"+i);
+    let val = null;
+    for(const r of radios) if(r.checked) val = Number(r.value);
+    if(val===null){ alert("Ответьте на вопрос №" + i); return; }
+    total += val;
+    answers.push(val);
   }
 
-  const activeAvg = parseFloat((activeSum / activeCount).toFixed(2));
-  const passiveAvg = parseFloat((passiveSum / passiveCount).toFixed(2));
+  const textInterpret = interpret(total);
 
-  const activeText = interpretNumeric(activeAvg);
-  const passiveText = interpretNumeric(passiveAvg);
+  document.getElementById("result").style.display = "block";
+  document.getElementById("result").innerHTML = `
+    <h3>Результат</h3>
+    <b>ФИО:</b> ${fio}<br>
+    <b>Группа:</b> ${group}<br>
+    <b>Баллы:</b> ${total} / 60<br>
+    <b>Интерпретация:</b> ${textInterpret}
+  `;
 
-  const data = {
-    group,
-    age,
-    gender,
-    activeScore: `${activeAvg} — ${activeText}`,
-    passiveScore: `${passiveAvg} — ${passiveText}`
-  };
-
-  // Отправка данных в Apps Script
+  // Отправка данных в Google Sheets
   try {
-    await fetch("https://script.google.com/macros/s/ВАШ_ID/exec", {
+    await fetch(GS_SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify({ fio, group, totalScore: total, answers })
     });
-  } catch (error) {
-    console.error("Ошибка при отправке: ", error);
-  }
-
-  document.getElementById("quizForm").reset();
-  document.getElementById("result").style.display = "block";
-  document.getElementById("result").innerHTML = `<h3>Спасибо за участие!</h3><p>Ваш ответ принят.</p>`;
+  } catch(err) { console.log("Ошибка отправки:", err); }
 }
 </script>
 </body>
