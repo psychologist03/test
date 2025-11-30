@@ -3,105 +3,37 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Тест на одиночество</title>
+<title>Опросник Д. Олвеуса</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 10px auto;
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  h2 { 
-    text-align: center;
-    font-size: 1.4em;
-  }
-  .question {
-    margin-bottom: 12px;
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-  }
-  #text {
-    text-align: center;
-    font-size: 0.95em;
-    margin-bottom: 20px;
-  }
-  label { 
-    display: block; 
-    margin: 5px 0; 
-    font-size: 0.9em;
-  }
-  button {
-    display: block;
-    margin: 20px auto;
-    padding: 12px 30px;
-    font-size: 1em;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    max-width: 300px;
-  }
-  button:hover { background-color: #0056b3; }
-  #result {
-    display: none;
-    background: #e9ecef;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-    text-align: center;
-  }
-  .info-block {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .info-block div {
-    flex: 1 1 100%;
-  }
-  .info-block label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-  }
-  .info-block input, .info-block select {
-    width: 95%;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 1em;
-  }
-  /* Мобильная адаптация */
-  @media (max-width: 600px) {
-    body { padding: 10px; box-shadow: none; }
-    h2 { font-size: 1.2em; }
-    button { font-size: 0.95em; padding: 10px 15px; }
-    label, #text { font-size: 0.9em; }
-  }
+body { font-family: Arial; max-width: 800px; margin: 10px auto; background: #f8f9fa; padding: 15px; border-radius: 10px; }
+h2 { text-align: center; font-size: 1.4em; }
+.question { margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+label { display: block; margin: 5px 0; font-size: 0.9em; }
+button { display: block; margin: 20px auto; padding: 12px 30px; font-size: 1em; background-color: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%; max-width: 300px; }
+button:hover { background-color: #0056b3; }
+#result { display: none; background: #e9ecef; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; }
 </style>
 </head>
 <body>
 
-<h2>Опросник: Чувство одиночества</h2>
-<p id="text">
-Пожалуйста, ответьте на все вопросы честно. Отметьте, как часто вы испытываете указанные состояния.
-</p>
+<h2>Опросник Д. Олвеуса</h2>
 
 <div class="info-block">
   <div>
-    <label for="fio">ФИО:</label>
-    <input type="text" id="fio" placeholder="Ваше ФИО" required>
+    <label for="group">Группа:</label>
+    <input type="text" id="group" placeholder="Группа" required>
   </div>
   <div>
-    <label for="group">Группа:</label>
-    <input type="text" id="group" placeholder="Ваша группа" required>
+    <label for="age">Возраст:</label>
+    <input type="number" id="age" min="5" max="30" placeholder="Возраст" required>
+  </div>
+  <div>
+    <label for="gender">Пол:</label>
+    <select id="gender" required>
+      <option value="">Выберите...</option>
+      <option value="Мужской">Мужской</option>
+      <option value="Женский">Женский</option>
+    </select>
   </div>
 </div>
 
@@ -113,98 +45,101 @@
 <div id="result"></div>
 
 <script>
-const GS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxG__xXUvYDAi9-00ke6dIsOyWPfyubSy9ddNxJvwtHl9NQpvcSdriVNvSvvE8rt7_0Nw/exec"; // вставьте сюда ваш URL
-
 const questions = [
-  "Я несчастлив, занимаясь столькими вещами в одиночку",
-  "Мне не с кем поговорить",
-  "Для меня невыносимо быть таким одиноким",
-  "Мне не хватает общения",
-  "Я чувствую, будто никто не понимает меня",
-  "Я застаю себя в ожидании, что люди позвонят, напишут мне",
-  "Нет никого, к кому бы я мог обратиться",
-  "Я сейчас больше ни с кем не близок",
-  "Те, кто меня окружает, не разделяют мои интересы",
-  "Я чувствую себя покинутым",
-  "Мне трудно раскрепощаться и общаться с окружающими",
-  "Я чувствую себя совершенно одиноким",
-  "Мои социальные отношения поверхностны",
-  "Я умираю от тоски по компании",
-  "Никто по-настоящему не знает меня",
-  "Я чувствую себя изолированным",
-  "Я несчастен, будучи таким отверженным",
-  "Мне трудно заводить друзей",
-  "Я чувствую себя исключенным",
-  "Люди вокруг меня, но не со мной"
+  "Я кого-то обозвал.",
+  "Я с кем-то специально не разговаривал.",
+  "Я нанес кому-то физический вред, например, толкнул или ударил.",
+  "Я распространял о ком-то сплетни.",
+  "Я угрожал.",
+  "Я украл или испортил чьи-то вещи.",
+  "Меня обзывали.",
+  "Обо мне распространяли сплетни.",
+  "Никто не хочет сидеть со мной или проводить свободное время.",
+  "У меня украли вещи.",
+  "Мне нанесли физический вред (ударили, толкнули).",
+  "Никто не разговаривает со мной.",
+  "Мне угрожали."
 ];
 
 const answerOptions = [
-  {text:"Часто", value:3},
-  {text:"Иногда", value:2},
-  {text:"Редко", value:1},
-  {text:"Никогда", value:0}
+  "Никогда не было",
+  "Было раз или два",
+  "Бывает иногда",
+  "Бывает раз в неделю",
+  "Бывает несколько раз в неделю"
 ];
 
-// создаём вопросы
+const activeRange = [0,1,2,3,4,5];
+const passiveRange = [6,7,8,9,10,11,12];
+
 window.onload = function() {
   const container = document.getElementById("questions");
   questions.forEach((q, i) => {
     const div = document.createElement("div");
     div.className = "question";
     div.innerHTML = `<strong>${i+1}. ${q}</strong>`;
-    answerOptions.forEach(opt => {
-      div.innerHTML += `<label><input type="radio" name="q${i}" value="${opt.value}" required> ${opt.text}</label>`;
+    answerOptions.forEach((opt, idx) => {
+      div.innerHTML += `<label><input type="radio" name="q${i}" value="${idx}" required> ${opt}</label>`;
     });
     container.appendChild(div);
   });
 };
 
-// интерпретация
-function interpret(score) {
-  if(score >= 40) return "Высокая степень одиночества";
-  if(score >= 20) return "Средний уровень одиночества";
-  return "Низкий уровень одиночества";
+function interpretNumeric(value) {
+  if (value < 1) return "слабо выражено";
+  if (value < 2.5) return "умеренно выражено";
+  return "ярко выражено (регулярное проявление)";
 }
 
 async function calculateResult() {
-  const fio = document.getElementById("fio").value.trim();
   const group = document.getElementById("group").value.trim();
-  if(!fio || !group) { alert("Заполните ФИО и группу"); return; }
+  const age = document.getElementById("age").value.trim();
+  const gender = document.getElementById("gender").value;
 
-  let total = 0;
-  let answers = [];
-  for(let i=0;i<questions.length;i++){
+  let activeSum = 0, passiveSum = 0;
+  let activeCount = 0, passiveCount = 0;
+
+  for (let i = 0; i < questions.length; i++) {
     const selected = document.querySelector(`input[name="q${i}"]:checked`);
-    if(!selected){ alert(`Ответьте на вопрос №${i+1}`); return; }
-    total += Number(selected.value);
-    answers.push(Number(selected.value));
+    if (!selected) {
+      alert("Пожалуйста, ответьте на все вопросы!");
+      return;
+    }
+    const value = parseInt(selected.value);
+    if (activeRange.includes(i)) { activeSum += value; activeCount++; }
+    if (passiveRange.includes(i)) { passiveSum += value; passiveCount++; }
   }
 
-  const percent = Math.round(total/60*100);
-  const interpretation = interpret(total);
+  const activeAvg = parseFloat((activeSum / activeCount).toFixed(2));
+  const passiveAvg = parseFloat((passiveSum / passiveCount).toFixed(2));
 
-  document.getElementById("result").style.display = "block";
-  document.getElementById("result").innerHTML = `
-    <h3>Результат</h3>
-    <b>ФИО:</b> ${fio}<br>
-    <b>Группа:</b> ${group}<br><br>
-    <b>Баллы:</b> ${total}/60<br>
-    <b>Процент:</b> ${percent}%<br>
-    <b>Интерпретация:</b> ${interpretation}<br>
-  `;
+  const activeText = interpretNumeric(activeAvg);
+  const passiveText = interpretNumeric(passiveAvg);
 
-  // отправка на Google Sheets
+  const data = {
+    group,
+    age,
+    gender,
+    activeScore: `${activeAvg} — ${activeText}`,
+    passiveScore: `${passiveAvg} — ${passiveText}`
+  };
+
+  // Отправка данных в Apps Script
   try {
-    await fetch(GS_SCRIPT_URL, {
+    await fetch("https://script.google.com/macros/s/ВАШ_ID/exec", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({fio, group, totalScore: total, percent, answers})
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
     });
-  } catch(e){
-    console.error(e);
+  } catch (error) {
+    console.error("Ошибка при отправке: ", error);
   }
+
+  document.getElementById("quizForm").reset();
+  document.getElementById("result").style.display = "block";
+  document.getElementById("result").innerHTML = `<h3>Спасибо за участие!</h3><p>Ваш ответ принят.</p>`;
 }
 </script>
-
 </body>
 </html>
