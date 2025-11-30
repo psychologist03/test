@@ -5,66 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Тест на одиночество AU</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 10px auto;
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
+  body { font-family: Arial, sans-serif; max-width: 800px; margin: 10px auto; background: #f8f9fa; padding: 15px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
   h2 { text-align: center; font-size: 1.4em; }
-  .question {
-    margin-bottom: 12px;
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-  }
+  .question { margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
   #text { text-align: center; font-size: 0.95em; }
   label { display: block; margin: 5px 0; font-size: 0.9em; }
-  button {
-    display: block;
-    margin: 20px auto;
-    padding: 12px 30px;
-    font-size: 1em;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    max-width: 300px;
-  }
+  button { display: block; margin: 20px auto; padding: 12px 30px; font-size: 1em; background-color: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%; max-width: 300px; }
   button:hover { background-color: #0056b3; }
-  #result {
-    display: none;
-    background: #e9ecef;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-  }
   .info-block { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
   .info-block div { flex: 1 1 100%; }
   .info-block label { font-weight: bold; display: block; margin-bottom: 5px; }
   .info-block input { width: 95%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; }
-
-  @media (max-width: 600px) {
-    body { padding: 10px; box-shadow: none; }
-    h2 { font-size: 1.2em; }
-    button { font-size: 0.95em; padding: 10px 15px; }
-    label, #text { font-size: 0.9em; }
-  }
 </style>
 </head>
 <body>
 
 <h2>Тест на одиночество AU</h2>
-<p id="text">
-Пожалуйста, ответьте на все вопросы честно.<br>
-Отметьте, насколько часто вы ощущали это за последний месяц.
-</p>
+<p id="text">Пожалуйста, ответьте на все вопросы честно.<br>Отметьте, насколько часто вы ощущали это за последний месяц.</p>
 
 <div class="info-block">
   <div>
@@ -132,8 +89,8 @@ window.onload = function() {
 };
 
 function interpret(score) {
-  if (score >= 40) return "Высокий уровень одиночества";
-  if (score >= 20) return "Средний уровень одиночества";
+  if(score >= 40) return "Высокий уровень одиночества";
+  if(score >= 20) return "Средний уровень одиночества";
   return "Низкий уровень одиночества";
 }
 
@@ -144,71 +101,49 @@ async function calculateResult() {
   let total = 0;
   let answers = [];
 
-  for (let i = 0; i < questions.length; i++) {
+  for(let i=0; i<questions.length; i++){
     const selected = document.querySelector(`input[name="q${i}"]:checked`);
-    if (!selected) {
-      alert("Пожалуйста, ответьте на все вопросы!");
-      return;
-    }
+    if(!selected){ alert("Пожалуйста, ответьте на все вопросы!"); return; }
     const val = parseInt(selected.value);
     total += val;
     answers.push(val);
   }
 
   const percent = Math.round((total / (questions.length * 3)) * 100);
-  const textInterpret = interpret(total);
+  const interpretation = interpret(total);
 
-  // Показываем результат
   const resultDiv = document.getElementById("result");
   resultDiv.style.display = "block";
   resultDiv.innerHTML = `
     <h3>Результат</h3>
     <b>ФИО:</b> ${fio}<br>
     <b>Группа:</b> ${group}<br>
-    <b>Баллы:</b> ${total} / 60<br>
+    <b>Баллы:</b> ${total} / ${questions.length*3}<br>
     <b>Процент:</b> ${percent}%<br>
-    <b>Интерпретация:</b> ${textInterpret}
+    <b>Интерпретация:</b> ${interpretation}
   `;
 
-  const data = {
-    fio: fio,
-    group: group,
-    total: total,
-    percent: percent,
-    answers: answers.join(",")
-  };
+  // Формируем одну строку для отправки
+  const dataString = `ФИО: ${fio}; Группа: ${group}; Баллы: ${total}; Процент: ${percent}%; Интерпретация: ${interpretation}; Ответы: ${answers.join(",")}`;
 
-
-  await sendToGoogleSheets(data);
-
-  // Очищаем форму
+  await sendToGoogleSheets(dataString);
   document.getElementById("quizForm").reset();
 }
 
-async function sendToGoogleSheets(data) {
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzGuDL1oTdjijwNyYPBCS3ED8ZgfgiN2HZTzoQuOVitwbNH653lEP2urnvQHOiHa_S-cg/exec";
+async function sendToGoogleSheets(dataString){
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxxRb091epJ0bPoYbNbcYOJxRqKKU9PSf8ZPuTB3a0qjd_6LOkpVpA1MNQ461YL-10O/exec";
   try {
-    await fetch(scriptURL, {
+    await fetch(scriptURL,{
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify({ data: dataString }) // Отправляем всё как одну строку
     });
     console.log("Данные успешно отправлены");
-  } catch (error) {
-    alert("Ошибка при отправке данных: " + error.message);
+  } catch(err){
+    alert("Ошибка при отправке данных: " + err.message);
   }
 }
-
 </script>
-
 </body>
 </html>
-
-
-
-
-
-
-
-
