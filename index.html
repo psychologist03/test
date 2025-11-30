@@ -196,6 +196,7 @@ async function sendToGoogleSheets(data) {
   try {
     await fetch(scriptURL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
@@ -206,3 +207,4 @@ async function sendToGoogleSheets(data) {
 </script>
 </body>
 </html>
+
