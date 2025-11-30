@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Тест на одиночество</title>
+  <style>
+    body{font-family:Arial, sans-serif;max-width:900px;margin:24px auto;padding:0 16px;}
+    table{width:100%;border-collapse:collapse;margin-top:12px;}
+    th,td{border:1px solid #ccc;padding:8px;text-align:center;}
+    th{background:#f2f2f2;}
+    .btn{padding:10px 14px;border:none;border-radius:6px;cursor:pointer;margin-top:12px;}
+    .primary{background:#007bff;color:#fff;}
+    #result{margin-top:16px;padding:12px;background:#f7f7f7;border-radius:6px;display:none;}
+    h3{text-align:center;margin-top:24px;}
+  </style>
+</head>
+<body>
+
+<h2 style="text-align:center">Опросник: чувство одиночества</h2>
+
+<form id="formTest">
+  <div style="margin-bottom:10px;">
+    ФИО: <input type="text" id="fio" required>
+    &nbsp; Группа: <input type="text" id="group" required>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>№</th>
+        <th style="text-align:left">Утверждение</th>
+        <th>Часто<br>(3)</th>
+        <th>Иногда<br>(2)</th>
+        <th>Редко<br>(1)</th>
+        <th>Никогда<br>(0)</th>
+      </tr>
+    </thead>
+    <tbody id="questions"></tbody>
+  </table>
+
+  <button type="button" class="btn primary" id="sendBtn">Отправить результат</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+  const GS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxG__xXUvYDAi9-00ke6dIsOyWPfyubSy9ddNxJvwtHl9NQpvcSdriVNvSvvE8rt7_0Nw/exec";
+
+  const items = [
+    "Я несчастлив, занимаясь столькими вещами в одиночку",
+    "Мне не с кем поговорить",
+    "Для меня невыносимо быть таким одиноким",
+    "Мне не хватает общения",
+    "Я чувствую, будто никто не понимает меня",
+    "Я застаю себя в ожидании, что люди позвонят, напишут мне",
+    "Нет никого, к кому бы я мог обратиться",
+    "Я сейчас больше ни с кем не близок",
+    "Те, кто меня окружает, не разделяют мои интересы",
+    "Я чувствую себя покинутым",
+    "Мне трудно раскрепощаться и общаться с окружающими",
+    "Я чувствую себя совершенно одиноким",
+    "Мои социальные отношения поверхностны",
+    "Я умираю от тоски по компании",
+    "Никто по-настоящему не знает меня",
+    "Я чувствую себя изолированным",
+    "Я несчастен, будучи таким отверженным",
+    "Мне трудно заводить друзей",
+    "Я чувствую себя исключенным",
+    "Люди вокруг меня, но не со мной"
+  ];
+
+  const tbody = document.getElementById('questions');
+
+  items.forEach((txt, i) => {
+    const n = i + 1;
+    tbody.innerHTML += `
+      <tr>
+        <td>${n}</td>
+        <td style="text-align:left">${txt}</td>
+        <td><input type="radio" name="q${n}" value="3" required></td>
+        <td><input type="radio" name="q${n}" value="2"></td>
+        <td><input type="radio" name="q${n}" value="1"></td>
+        <td><input type="radio" name="q${n}" value="0"></td>
+      </tr>`;
+  });
+
+  function interpret(score){
+    if(score >= 40) return "Высокий уровень одиночества";
+    if(score >= 20) return "Средний уровень одиночества";
+    return "Низкий уровень одиночества";
+  }
+
+  document.getElementById("sendBtn").onclick = async () => {
+    const fio = document.getElementById("fio").value.trim();
+    const group = document.getElementById("group").value.trim();
+
+    let total = 0;
+    let answers = [];
+
+    for (let i = 1; i <= items.length; i++) {
+      const radios = document.getElementsByName("q" + i);
+      let val = null;
+      for (const r of radios) if (r.checked) val = Number(r.value);
+      if (val === null) {
+        alert("Ответьте на вопрос №" + i);
+        return;
+      }
+      total += val;
+      answers.push(val);
+    }
+
+    const percent = Math.round((total / 60) * 100);
+    const textInterpret = interpret(total);
+
+    document.getElementById("result").style.display = "block";
+    document.getElementById("result").innerHTML =
+      `<h3>Результат</h3>
+       <b>ФИО:</b> ${fio}<br>
+       <b>Группа:</b> ${group}<br><br>
+       <b>Баллы:</b> ${total} / 60<br>
+       <b>Процент:</b> ${percent}%<br>
+       <b>Интерпретация:</b> ${textInterpret}<br><br>
+       Отправка данных...`;
+
+    // отправка
+    try {
+      await fetch(GS_SCRIPT_URL, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ fio, group, totalScore: total, percent, answers })
+      });
+
+      document.getElementById("result").innerHTML +=
+        "<br><span style='color:green'>Данные успешно отправлены.</span>";
+    } catch (e) {
+      document.getElementById("result").innerHTML +=
+        "<br><span style='color:red'>Ошибка отправки.</span>";
+    }
+  };
+</script>
+
+</body>
+</html>
