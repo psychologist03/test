@@ -171,12 +171,12 @@ async function calculateResult() {
   `;
 
   const data = {
-  fio,
-  group,
-  totalScore: total.toString(),        // число как строка
-  percent: percent.toString(),         // число как строка
-  answers: answers.join(',')           // массив → строка "0,1,2,3..."
-};
+    fio: fio,
+    group: group,
+    total: total,
+    percent: percent,
+    answers: answers.join(",")
+  };
 
 
   await sendToGoogleSheets(data);
@@ -204,6 +204,7 @@ async function sendToGoogleSheets(data) {
 
 </body>
 </html>
+
 
 
 
