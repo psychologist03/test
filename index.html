@@ -1,146 +1,210 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Тест на одиночество</title>
-  <style>
-    body{font-family:Arial, sans-serif;max-width:900px;margin:24px auto;padding:0 16px;}
-    table{width:100%;border-collapse:collapse;margin-top:12px;}
-    th,td{border:1px solid #ccc;padding:8px;text-align:center;}
-    th{background:#f2f2f2;}
-    .btn{padding:10px 14px;border:none;border-radius:6px;cursor:pointer;margin-top:12px;}
-    .primary{background:#007bff;color:#fff;}
-    #result{margin-top:16px;padding:12px;background:#f7f7f7;border-radius:6px;display:none;}
-    h3{text-align:center;margin-top:24px;}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Тест на одиночество</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 10px auto;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  h2 { 
+    text-align: center;
+    font-size: 1.4em;
+  }
+  .question {
+    margin-bottom: 12px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  #text {
+    text-align: center;
+    font-size: 0.95em;
+    margin-bottom: 20px;
+  }
+  label { 
+    display: block; 
+    margin: 5px 0; 
+    font-size: 0.9em;
+  }
+  button {
+    display: block;
+    margin: 20px auto;
+    padding: 12px 30px;
+    font-size: 1em;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 300px;
+  }
+  button:hover { background-color: #0056b3; }
+  #result {
+    display: none;
+    background: #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .info-block {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .info-block div {
+    flex: 1 1 100%;
+  }
+  .info-block label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .info-block input, .info-block select {
+    width: 95%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+  }
+  /* Мобильная адаптация */
+  @media (max-width: 600px) {
+    body { padding: 10px; box-shadow: none; }
+    h2 { font-size: 1.2em; }
+    button { font-size: 0.95em; padding: 10px 15px; }
+    label, #text { font-size: 0.9em; }
+  }
+</style>
 </head>
 <body>
 
-<h2 style="text-align:center">Опросник: чувство одиночества</h2>
+<h2>Опросник: Чувство одиночества</h2>
+<p id="text">
+Пожалуйста, ответьте на все вопросы честно. Отметьте, как часто вы испытываете указанные состояния.
+</p>
 
-<form id="formTest">
-  <div style="margin-bottom:10px;">
-    ФИО: <input type="text" id="fio" required>
-    &nbsp; Группа: <input type="text" id="group" required>
+<div class="info-block">
+  <div>
+    <label for="fio">ФИО:</label>
+    <input type="text" id="fio" placeholder="Ваше ФИО" required>
   </div>
+  <div>
+    <label for="group">Группа:</label>
+    <input type="text" id="group" placeholder="Ваша группа" required>
+  </div>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>№</th>
-        <th style="text-align:left">Утверждение</th>
-        <th>Часто<br>(3)</th>
-        <th>Иногда<br>(2)</th>
-        <th>Редко<br>(1)</th>
-        <th>Никогда<br>(0)</th>
-      </tr>
-    </thead>
-    <tbody id="questions"></tbody>
-  </table>
-
-  <button type="button" class="btn primary" id="sendBtn">Отправить результат</button>
+<form id="quizForm">
+  <div id="questions"></div>
+  <button type="button" onclick="calculateResult()">Отправить результат</button>
 </form>
 
 <div id="result"></div>
 
 <script>
-  const GS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxG__xXUvYDAi9-00ke6dIsOyWPfyubSy9ddNxJvwtHl9NQpvcSdriVNvSvvE8rt7_0Nw/exec";
+const GS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxG__xXUvYDAi9-00ke6dIsOyWPfyubSy9ddNxJvwtHl9NQpvcSdriVNvSvvE8rt7_0Nw/exec"; // вставьте сюда ваш URL
 
-  const items = [
-    "Я несчастлив, занимаясь столькими вещами в одиночку",
-    "Мне не с кем поговорить",
-    "Для меня невыносимо быть таким одиноким",
-    "Мне не хватает общения",
-    "Я чувствую, будто никто не понимает меня",
-    "Я застаю себя в ожидании, что люди позвонят, напишут мне",
-    "Нет никого, к кому бы я мог обратиться",
-    "Я сейчас больше ни с кем не близок",
-    "Те, кто меня окружает, не разделяют мои интересы",
-    "Я чувствую себя покинутым",
-    "Мне трудно раскрепощаться и общаться с окружающими",
-    "Я чувствую себя совершенно одиноким",
-    "Мои социальные отношения поверхностны",
-    "Я умираю от тоски по компании",
-    "Никто по-настоящему не знает меня",
-    "Я чувствую себя изолированным",
-    "Я несчастен, будучи таким отверженным",
-    "Мне трудно заводить друзей",
-    "Я чувствую себя исключенным",
-    "Люди вокруг меня, но не со мной"
-  ];
+const questions = [
+  "Я несчастлив, занимаясь столькими вещами в одиночку",
+  "Мне не с кем поговорить",
+  "Для меня невыносимо быть таким одиноким",
+  "Мне не хватает общения",
+  "Я чувствую, будто никто не понимает меня",
+  "Я застаю себя в ожидании, что люди позвонят, напишут мне",
+  "Нет никого, к кому бы я мог обратиться",
+  "Я сейчас больше ни с кем не близок",
+  "Те, кто меня окружает, не разделяют мои интересы",
+  "Я чувствую себя покинутым",
+  "Мне трудно раскрепощаться и общаться с окружающими",
+  "Я чувствую себя совершенно одиноким",
+  "Мои социальные отношения поверхностны",
+  "Я умираю от тоски по компании",
+  "Никто по-настоящему не знает меня",
+  "Я чувствую себя изолированным",
+  "Я несчастен, будучи таким отверженным",
+  "Мне трудно заводить друзей",
+  "Я чувствую себя исключенным",
+  "Люди вокруг меня, но не со мной"
+];
 
-  const tbody = document.getElementById('questions');
+const answerOptions = [
+  {text:"Часто", value:3},
+  {text:"Иногда", value:2},
+  {text:"Редко", value:1},
+  {text:"Никогда", value:0}
+];
 
-  items.forEach((txt, i) => {
-    const n = i + 1;
-    tbody.innerHTML += `
-      <tr>
-        <td>${n}</td>
-        <td style="text-align:left">${txt}</td>
-        <td><input type="radio" name="q${n}" value="3" required></td>
-        <td><input type="radio" name="q${n}" value="2"></td>
-        <td><input type="radio" name="q${n}" value="1"></td>
-        <td><input type="radio" name="q${n}" value="0"></td>
-      </tr>`;
+// создаём вопросы
+window.onload = function() {
+  const container = document.getElementById("questions");
+  questions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.className = "question";
+    div.innerHTML = `<strong>${i+1}. ${q}</strong>`;
+    answerOptions.forEach(opt => {
+      div.innerHTML += `<label><input type="radio" name="q${i}" value="${opt.value}" required> ${opt.text}</label>`;
+    });
+    container.appendChild(div);
   });
+};
 
-  function interpret(score){
-    if(score >= 40) return "Высокий уровень одиночества";
-    if(score >= 20) return "Средний уровень одиночества";
-    return "Низкий уровень одиночества";
+// интерпретация
+function interpret(score) {
+  if(score >= 40) return "Высокая степень одиночества";
+  if(score >= 20) return "Средний уровень одиночества";
+  return "Низкий уровень одиночества";
+}
+
+async function calculateResult() {
+  const fio = document.getElementById("fio").value.trim();
+  const group = document.getElementById("group").value.trim();
+  if(!fio || !group) { alert("Заполните ФИО и группу"); return; }
+
+  let total = 0;
+  let answers = [];
+  for(let i=0;i<questions.length;i++){
+    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+    if(!selected){ alert(`Ответьте на вопрос №${i+1}`); return; }
+    total += Number(selected.value);
+    answers.push(Number(selected.value));
   }
 
-  document.getElementById("sendBtn").onclick = async () => {
-    const fio = document.getElementById("fio").value.trim();
-    const group = document.getElementById("group").value.trim();
+  const percent = Math.round(total/60*100);
+  const interpretation = interpret(total);
 
-    let total = 0;
-    let answers = [];
+  document.getElementById("result").style.display = "block";
+  document.getElementById("result").innerHTML = `
+    <h3>Результат</h3>
+    <b>ФИО:</b> ${fio}<br>
+    <b>Группа:</b> ${group}<br><br>
+    <b>Баллы:</b> ${total}/60<br>
+    <b>Процент:</b> ${percent}%<br>
+    <b>Интерпретация:</b> ${interpretation}<br>
+  `;
 
-    for (let i = 1; i <= items.length; i++) {
-      const radios = document.getElementsByName("q" + i);
-      let val = null;
-      for (const r of radios) if (r.checked) val = Number(r.value);
-      if (val === null) {
-        alert("Ответьте на вопрос №" + i);
-        return;
-      }
-      total += val;
-      answers.push(val);
-    }
-
-    const percent = Math.round((total / 60) * 100);
-    const textInterpret = interpret(total);
-
-    document.getElementById("result").style.display = "block";
-    document.getElementById("result").innerHTML =
-      `<h3>Результат</h3>
-       <b>ФИО:</b> ${fio}<br>
-       <b>Группа:</b> ${group}<br><br>
-       <b>Баллы:</b> ${total} / 60<br>
-       <b>Процент:</b> ${percent}%<br>
-       <b>Интерпретация:</b> ${textInterpret}<br><br>
-       Отправка данных...`;
-
-    // отправка
-    try {
-      await fetch(GS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors", 
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ fio, group, totalScore: total, percent, answers })
-      });
-
-      document.getElementById("result").innerHTML +=
-        "<br><span style='color:green'>Данные успешно отправлены.</span>";
-    } catch (e) {
-      document.getElementById("result").innerHTML +=
-        "<br><span style='color:red'>Ошибка отправки.</span>";
-    }
-  };
+  // отправка на Google Sheets
+  try {
+    await fetch(GS_SCRIPT_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({fio, group, totalScore: total, percent, answers})
+    });
+  } catch(e){
+    console.error(e);
+  }
+}
 </script>
 
 </body>
 </html>
-
