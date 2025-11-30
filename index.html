@@ -127,6 +127,7 @@
     try {
       await fetch(GS_SCRIPT_URL, {
         method: "POST",
+        mode: "no-cors", 
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ fio, group, totalScore: total, percent, answers })
       });
@@ -142,3 +143,4 @@
 
 </body>
 </html>
+
