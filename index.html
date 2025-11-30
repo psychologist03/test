@@ -179,22 +179,24 @@ async function calculateResult() {
 }
 
 async function sendToGoogleSheets(data) {
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzGuDL1oTdjijwNyYPBCS3ED8ZgfgiN2HZTzoQuOVitwbNH653lEP2urnvQHOiHa_S-cg/exec"; // вставь сюда ссылку веб-приложения
+  const scriptURL = "https://script.google.com/macros/s/AKfycbzGuDL1oTdjijwNyYPBCS3ED8ZgfgiN2HZTzoQuOVitwbNH653lEP2urnvQHOiHa_S-cg/exec";
   try {
     await fetch(scriptURL, {
       method: "POST",
-      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
+    console.log("Данные успешно отправлены");
   } catch (error) {
     alert("Ошибка при отправке данных: " + error.message);
   }
 }
+
 </script>
 
 </body>
 </html>
+
 
 
 
