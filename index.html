@@ -1,149 +1,103 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Тест на одиночество AU</title>
+<meta charset="UTF-8">
+<title>Тест на одиночество</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 800px; margin: 10px auto; background: #f8f9fa; padding: 15px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-  h2 { text-align: center; font-size: 1.4em; }
-  .question { margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
-  #text { text-align: center; font-size: 0.95em; }
-  label { display: block; margin: 5px 0; font-size: 0.9em; }
-  button { display: block; margin: 20px auto; padding: 12px 30px; font-size: 1em; background-color: #007BFF; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%; max-width: 300px; }
-  button:hover { background-color: #0056b3; }
-  .info-block { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-  .info-block div { flex: 1 1 100%; }
-  .info-block label { font-weight: bold; display: block; margin-bottom: 5px; }
-  .info-block input { width: 95%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; }
+body { font-family: Arial, sans-serif; padding: 20px; }
+.question { margin-bottom: 15px; }
 </style>
 </head>
 <body>
 
-<h2>Тест на одиночество AU</h2>
-<p id="text">Пожалуйста, ответьте на все вопросы честно.<br>Отметьте, насколько часто вы ощущали это за последний месяц.</p>
+<h2>Тест на одиночество</h2>
 
-<div class="info-block">
-  <div>
-    <label for="group">Группа:</label>
-    <input type="text" id="group" placeholder="Укажите свою группу" required>
-  </div>
-  <div>
-    <label for="fio">ФИО:</label>
-    <input type="text" id="fio" placeholder="Введите ФИО" required>
-  </div>
-</div>
+<label>ФИО: <input id="fio" type="text"></label><br><br>
+<label>Группа: <input id="group" type="text"></label><br><br>
 
-<form id="quizForm">
-  <div id="questions"></div>
-  <button type="button" onclick="calculateResult()">Отправить результат</button>
-</form>
+<div id="questions"></div>
 
+<button onclick="calculate()">Отправить</button>
+
+<h3>Результат:</h3>
 <div id="result"></div>
 
 <script>
+// ------------------ ВОПРОСЫ ------------------
 const questions = [
-  "Я несчастлив, занимаясь многими делами в одиночку",
-  "Мне не с кем поговорить",
-  "Для меня невыносимо быть одиноким",
-  "Мне не хватает общения",
-  "Я чувствую, будто никто не понимает меня",
-  "Я жду, что кто-то позвонит или напишет",
-  "Нет никого, к кому я могу обратиться",
-  "Я сейчас не близок ни с кем",
-  "Те, кто меня окружает, не разделяют мои интересы",
-  "Я чувствую себя покинутым",
-  "Мне трудно общаться с окружающими",
-  "Я чувствую себя совершенно одиноким",
-  "Мои социальные отношения поверхностны",
-  "Я страдаю от отсутствия компании",
-  "Никто не знает меня по-настоящему",
-  "Я чувствую себя изолированным",
-  "Я несчастен из-за отверженности",
-  "Мне трудно заводить друзей",
-  "Я чувствую себя исключенным",
-  "Люди вокруг меня, но не со мной"
+    "Я чувствую себя одиноко.",
+    "Мне кажется, что никому нет до меня дела.",
+    "Мне не хватает общения.",
+    "Меня редко понимают."
 ];
 
-const answerOptions = [
-  "Никогда (0)",
-  "Редко (1)",
-  "Иногда (2)",
-  "Часто (3)"
-];
+const answersHTML = questions.map((q, i) => `
+  <div class="question">
+      <b>${i+1}. ${q}</b><br>
+      <label><input type="radio" name="q${i}" value="0"> Никогда</label>
+      <label><input type="radio" name="q${i}" value="1"> Иногда</label>
+      <label><input type="radio" name="q${i}" value="2"> Часто</label>
+      <label><input type="radio" name="q${i}" value="3"> Всегда</label>
+  </div>
+`).join("");
 
-window.onload = function() {
-  const container = document.getElementById("questions");
-  questions.forEach((q, i) => {
-    const div = document.createElement("div");
-    div.className = "question";
-    div.innerHTML = `<strong>${i+1}. ${q}</strong>`;
-    answerOptions.forEach((opt, idx) => {
-      div.innerHTML += `
-        <label>
-          <input type="radio" name="q${i}" value="${idx}" required> ${opt}
-        </label>`;
-    });
-    container.appendChild(div);
-  });
-};
+document.getElementById("questions").innerHTML = answersHTML;
 
-function interpret(score) {
-  if(score >= 40) return "Высокий уровень одиночества";
-  if(score >= 20) return "Средний уровень одиночества";
-  return "Низкий уровень одиночества";
+// ------------------ ИНТЕРПРЕТАЦИЯ ------------------
+function getInterpretation(total) {
+    if (total >= 40) return "Высокая степень одиночества";
+    if (total >= 20) return "Средний уровень одиночества";
+    return "Низкий уровень одиночества";
 }
 
-async function calculateResult() {
-  const group = document.getElementById("group").value.trim();
-  const fio = document.getElementById("fio").value.trim();
+// ------------------ ПОДСЧЁТ ------------------
+function calculate() {
+    const fio = document.getElementById("fio").value.trim();
+    const group = document.getElementById("group").value.trim();
 
-  let total = 0;
-  let answers = [];
+    let total = 0;
+    let answers = [];
 
-  for(let i=0; i<questions.length; i++){
-    const selected = document.querySelector(`input[name="q${i}"]:checked`);
-    if(!selected){ alert("Пожалуйста, ответьте на все вопросы!"); return; }
-    const val = parseInt(selected.value);
-    total += val;
-    answers.push(val);
-  }
+    for (let i = 0; i < questions.length; i++) {
+        const el = document.querySelector(`input[name="q${i}"]:checked`);
+        const value = el ? Number(el.value) : 0;
+        answers.push(value);
+        total += value;
+    }
 
-  const percent = Math.round((total / (questions.length * 3)) * 100);
-  const interpretation = interpret(total);
+    const percent = Math.round((total / (questions.length * 3)) * 100);
+    const interpretation = getInterpretation(total);
 
-  const resultDiv = document.getElementById("result");
-  resultDiv.style.display = "block";
-  resultDiv.innerHTML = `
-    <h3>Результат</h3>
-    <b>ФИО:</b> ${fio}<br>
-    <b>Группа:</b> ${group}<br>
-    <b>Баллы:</b> ${total} / ${questions.length*3}<br>
-    <b>Процент:</b> ${percent}%<br>
-    <b>Интерпретация:</b> ${interpretation}
-  `;
+    // ПОКАЗ НА ЭКРАНЕ
+    document.getElementById("result").innerHTML =
+        `<b>ФИО:</b> ${fio}<br>
+         <b>Группа:</b> ${group}<br>
+         <b>Баллы:</b> ${total} / ${questions.length * 3}<br>
+         <b>Процент:</b> ${percent}%<br>
+         <b>Интерпретация:</b> ${interpretation}<br>`;
 
-  // Формируем одну строку для отправки
-  const dataString = `ФИО: ${fio}; Группа: ${group}; Баллы: ${total}; Процент: ${percent}%; Интерпретация: ${interpretation}; Ответы: ${answers.join(",")}`;
+    // ----------- ДАННЫЕ, КОТОРЫЕ УЙДУТ В APPS SCRIPT -------------
+    const data = {
+        fio: String(fio),
+        group: String(group),
+        totalScore: Number(total),
+        percent: Number(percent),
+        interpretation: String(interpretation),
+        answers: JSON.stringify(answers)
+    };
 
-  await sendToGoogleSheets(dataString);
-  document.getElementById("quizForm").reset();
-}
+    // console.log("Отправка:", data);
 
-async function sendToGoogleSheets(dataString){
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxxRb091epJ0bPoYbNbcYOJxRqKKU9PSf8ZPuTB3a0qjd_6LOkpVpA1MNQ461YL-10O/exec";
-  try {
-    await fetch(scriptURL,{
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: dataString }) // Отправляем всё как одну строку
-    });
-    console.log("Данные успешно отправлены");
-  } catch(err){
-    alert("Ошибка при отправке данных: " + err.message);
-  }
+    fetch("YOUR_WEB_APP_URL_HERE", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(() => console.log("Отправлено"))
+    .catch(err => console.error("Ошибка:", err));
 }
 </script>
+
 </body>
 </html>
