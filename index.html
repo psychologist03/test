@@ -65,6 +65,9 @@
 Пожалуйста, ответьте на все вопросы честно.<br>
 Отметьте, насколько часто вы ощущали это за последний месяц.
 </p>
+<p><b>Инструкция.</b>
+
+Вам предлагается ряд утверждений. Рассмотрите последовательно каждое и оцените с точки зрения частоты их проявления применительно к вашей жизни при помощи четырех вариантов ответов: «часто», «иногда», «редко», «никогда».</p>
 
 <div class="info-block">
   <div>
@@ -74,6 +77,14 @@
   <div>
     <label for="fio">ФИО:</label>
     <input type="text" id="fio" placeholder="Введите ФИО" required>
+  </div>
+   <div>
+    <label for="course">Курс:</label>
+    <input type="text" id="course" placeholder="Введите курс" required>
+  </div>
+     <div>
+    <label for="age">Возраст:</label>
+    <input type="text" id="age" placeholder="Введите возраст" required>
   </div>
 </div>
 
@@ -86,34 +97,29 @@
 
 <script>
 const questions = [
-  "Я несчастлив, занимаясь многими делами в одиночку",
+  "Я несчастлив, занимаясь столькими вещами в одиночку",
   "Мне не с кем поговорить",
   "Для меня невыносимо быть одиноким",
   "Мне не хватает общения",
   "Я чувствую, будто никто не понимает меня",
-  "Я жду, что кто-то позвонит или напишет",
+  "Я застаю себя в ожидании, что люди позвонят, напишут мне",
   "Нет никого, к кому я могу обратиться",
   "Я сейчас не близок ни с кем",
   "Те, кто меня окружает, не разделяют мои интересы",
   "Я чувствую себя покинутым",
-  "Мне трудно общаться с окружающими",
+  "Я не способен раскрепощаться и общаться с теми, кто меня окружает",
   "Я чувствую себя совершенно одиноким",
-  "Мои социальные отношения поверхностны",
+  "Мои социальные отношения и связи поверхностны",
   "Я страдаю от отсутствия компании",
   "Никто не знает меня по-настоящему",
   "Я чувствую себя изолированным",
   "Я несчастен из-за отверженности",
   "Мне трудно заводить друзей",
-  "Я чувствую себя исключенным",
+  "Я чувствую себя исключенным и изолированным другими",
   "Люди вокруг меня, но не со мной"
 ];
 
-const answerOptions = [
-  "Никогда (0)",
-  "Редко (1)",
-  "Иногда (2)",
-  "Часто (3)"
-];
+const answerOptions = ["Никогда", "Редко", "Иногда", "Часто"];
 
 window.onload = function() {
   const container = document.getElementById("questions");
@@ -131,6 +137,17 @@ window.onload = function() {
   });
 };
 
+// Блокировка F12, Ctrl+Shift+I, Ctrl+U и правого клика
+document.addEventListener('keydown', function(e) {
+  if (e.key === "F12" || 
+      (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i") || 
+      (e.ctrlKey && e.key.toLowerCase() === "u")) {
+    e.preventDefault();
+    alert("Доступ запрещен!");
+  }
+});
+document.addEventListener('contextmenu', e => e.preventDefault());
+
 function interpret(score) {
   if (score >= 40) return "Высокий уровень одиночества";
   if (score >= 20) return "Средний уровень одиночества";
@@ -140,10 +157,19 @@ function interpret(score) {
 async function calculateResult() {
   const group = document.getElementById("group").value.trim();
   const fio = document.getElementById("fio").value.trim();
+  const course = document.getElementById("course").value.trim();
+  const age = document.getElementById("age").value.trim();
+
+  // Проверка информационных полей
+  if (!fio || !group || !course || !age) {
+    alert("Пожалуйста, заполните все поля с информацией о себе!");
+    return;
+  }
 
   let total = 0;
   let answers = [];
 
+  // Проверка всех вопросов
   for (let i = 0; i < questions.length; i++) {
     const selected = document.querySelector(`input[name="q${i}"]:checked`);
     if (!selected) {
@@ -158,28 +184,68 @@ async function calculateResult() {
   const percent = Math.round((total / (questions.length * 3)) * 100);
   const textInterpret = interpret(total);
 
-  // Показываем результат
+  const data = {
+    fio: fio,
+    group: group,
+    course: course,
+    age: age,
+    totalScore: total,
+    percent: percent,
+    interpretation: textInterpret,
+    answers: JSON.stringify(answers)
+  };
+
+  // Скрываем форму и показываем анимацию ожидания
+  document.getElementById("quizForm").style.display = "none";
   const resultDiv = document.getElementById("result");
   resultDiv.style.display = "block";
   resultDiv.innerHTML = `
-    <h3>Результат</h3>
-    <b>ФИО:</b> ${fio}<br>
-    <b>Группа:</b> ${group}<br>
-    <b>Баллы:</b> ${total} / 60<br>
-    <b>Процент:</b> ${percent}%<br>
-    <b>Интерпретация:</b> ${textInterpret}
+    <div style="text-align:center; font-size:1.2em;">
+      Отправка данных...
+      <div class="loader"></div>
+    </div>
   `;
 
-  const data = { fio, group, totalScore: total, percent, answers };
+  // Стили для анимации
+  if (!document.getElementById('loader-style')) {
+    const style = document.createElement('style');
+    style.id = 'loader-style';
+    style.innerHTML = `
+      .loader {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #007BFF;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 10px auto 0;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
-  await sendToGoogleSheets(data);
+  try {
+    await sendToGoogleSheets(data);
+  } catch (err) {
+    console.error(err);
+  }
 
-  // Очищаем форму
-  document.getElementById("quizForm").reset();
+  // Через 2 секунды заменяем анимацию на сообщение благодарности
+  setTimeout(() => {
+    resultDiv.innerHTML = `
+      <h3>Спасибо за прохождение теста!</h3>
+      <p>Ваши ответы успешно отправлены.</p>
+    `;
+  }, 2000);
 }
 
+
 async function sendToGoogleSheets(data) {
-  const scriptURL = "https://script.google.com/macros/s/AKfycbzGuDL1oTdjijwNyYPBCS3ED8ZgfgiN2HZTzoQuOVitwbNH653lEP2urnvQHOiHa_S-cg/exec";
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwob7fEwodziRXllvDwPDrybqtjXEm1fTobNKSHzMlFDSWyVvMQXha9EdQWmVz4a2xpyA/exec";
   try {
     await fetch(scriptURL, {
       method: "POST",
@@ -192,8 +258,8 @@ async function sendToGoogleSheets(data) {
     alert("Ошибка при отправке данных: " + error.message);
   }
 }
-
 </script>
+
 
 </body>
 </html>
